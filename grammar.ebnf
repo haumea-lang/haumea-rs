@@ -1,0 +1,45 @@
+<Program> = [<Declaration>]*
+
+<Declaration> = <Function>
+
+<Function> = "to" <Ident> ["with" <Signature>] <Statement>
+
+<Signature> = "(" [<Ident> "is" <A> <Type> ","]* "returns" <A> <Type> ")"
+
+<Statement> = ( <Return> | <If> | <Do> |
+                              <Call> | <Let> | <Set> |
+                              <Change> )
+
+<Return> = "return" <Expression>
+
+<Do> = "do" [<Statement>]* "end"
+
+<Call> = <Ident> "(" [<Expression> ["," <Expression>]* ] ")"
+
+<If> = <If-Clause> [<Else-Clause>]
+
+<If-Clause> = "if" <Expression> "then" <Statement>
+
+<Else-Clause> = "else" <Statement>
+
+<Let> = "let" <Ident> "be" <A> <Type>
+
+<Set> = "set" <Ident> "to" <Expression>
+
+<Change> = "change" <Ident> "by" <Expression>
+
+<Expression> = <Term> [<Addop> <Term>]*
+<Term> = <S-Factor> [<Mullop> <S-Factor>]*
+<S-Factor> = [<Not-op>] <Factor>
+<Factor> = <Int> | <Float> | <Ident> | "(" <Expression>")"
+<Addop> = "+" | "-" | "or"
+<Mulop> = "*" | "/" | "and"
+<Not-op> = "-" | "not"
+
+<Int> = ["0"|"1"|"2"|"3"|"4"|"4"|"5"|"6"|"7"|"8"|"9"]+
+<Float> = <Int> "." <Int>
+
+<A> = "a" | "an"
+<Ident> = /[a-zA-Z_/+/
+<Type> = <Basic-Type> | "[" <Type> "]" | "String"
+<Basic-Type> = "Integer" | "Float" | "Character"
