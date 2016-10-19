@@ -41,7 +41,7 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    pub fn next(&mut self) -> Token {
+    pub fn next_token(&mut self) -> Token {
         self.skip_white();
         match self.peek {
             Some(c) => {
@@ -123,5 +123,17 @@ impl<'a> Scanner<'a> {
             }
         };
         s
+    }
+}
+
+impl<'a> Iterator for Scanner<'a> {
+    type Item = Token;
+
+    fn next(&mut self) -> Option<Token> {
+        let tok = self.next_token();
+        match tok {
+            Token::EOF => None,
+            _ => Some(tok),
+        }
     }
 }
