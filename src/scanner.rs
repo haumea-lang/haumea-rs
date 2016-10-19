@@ -50,6 +50,8 @@ pub enum Token {
     Lp,
     /// Right parens
     Rp,
+    /// A comma
+    Comma,
     /// An unexpected char was read
     ///
     /// The content is the char read
@@ -81,7 +83,7 @@ impl<'a> Scanner<'a> {
             ident_chars: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_".chars().collect::<Vec<_>>(),
             reserved_words: vec!["to", "with", "is", "a", "an", "returns", "return",
                                  "do", "end", "if", "then", "else", "let", "be",
-                                 "set", "to", "change", "by", "Integer"],
+                                 "set", "to", "change", "by"],
             peek: peek,
         }
     }
@@ -111,9 +113,13 @@ impl<'a> Scanner<'a> {
                 } else if c == ')' {
                     self.get_char();
                     Token::Rp
+                } else if c == ',' {
+                    self.get_char();
+                    Token::Comma
                 } else if self.operator_chars.contains(&c) {
                     Token::Operator(self.get_op())
                 } else {
+                    self.get_char();
                     Token::Error(c)
                 }
             },
