@@ -12,62 +12,21 @@ pub struct Scanner<'a> {
 }
 
 #[derive(Debug)]
-pub enum Token<'a> {
+pub enum Token {
     Number(i64),
-    Ident(&'a str),
-    Keyword(Keyword),
-    Operator(Op),
-    EOF,
-}
-
-#[derive(Debug)]
-pub enum Keyword {
-    To,
-    With,
-    Is,
-    A,
-    An,
-    Returns,
-    Return,
-    Do,
-    End,
-    If,
-    Then,
-    Else,
-    Let,
-    Be,
-    Set,
-    Change,
-    By,
-    Integer,
-}
-
-#[derive(Debug)]
-pub enum Op {
-    Add,
-    Sub,
-    Mul,
-    Div,
-    Equ,
-    Neq,
-    Gt,
-    Gte,
-    Lt,
-    Lte,
-    And,
-    Or,
-    Not,
+    Ident(String),
+    Keyword(String),
+    Operator(String),
     Lp,
     Rp,
-    Inv,
-    Bor,
-    Band,
+    Error(char),
+    EOF,
 }
 
 impl<'a> Scanner<'a> {
     pub fn new(source: &'a str) -> Scanner {
-        let mut chars = source.chars();
-        let peek = Some(" ");
+        let chars = source.chars();
+        let peek = Some(' ');
         Scanner {
             source_str: source,
             source_chars: chars,
@@ -82,27 +41,87 @@ impl<'a> Scanner<'a> {
         }
     }
 
+    pub fn next(&mut self) -> Token {
+        self.skip_white();
+        match self.peek {
+            Some(c) => {
+                if self.ident_chars.contains(&c) {
+                    self.get_ident_token()
+                } else if c.is_digit(10) {
+                    Token::Number(self.get_num())
+                } else if c == '(' {
+                    self.get_char();
+                    Token::Lp
+                } else if c == ')' {
+                    self.get_char();
+                    Token::Rp
+                } else if self.operator_chars.contains(&c) {
+                    Token::Operator(self.get_op())
+                } else {
+                    Token::Error(c)
+                }
+            },
+            None => Token::EOF,
+        }
+    }
+
     fn get_char(&mut self) {
-        self.peek = self.chars.next();
+        self.peek = self.source_chars.next();
     }
 
     fn skip_white(&mut self) {
         loop {
             match self.peek {
-                Some(c) if c.is_whitespace() {
-
+                Some(c) if c.is_whitespace() => {
+                    self.get_char()
                 }
                 _ => break,
             }
         }
     }
-    pub fn next(&mut self) -> Token {
-        self.skip_white();
-        match self.peek {
-            Some(c) => {
-                Token::Ident(c)
-            },
-            None => Token::EOF,
+
+    fn get_num(&mut self) -> i64 {
+        let mut s = String::new();
+        s.push(self.peek.unwrap());
+        loop {
+            self.get_char();
+            match self.peek {
+                Some(c) if c.is_digit(10) => s.push(c),
+                _ => break,
+            }
         }
+        s.parse::<i64>().unwrap()
+    }
+
+    fn get_ident_token(&mut self) -> Token {
+        let mut s = String::new();
+        s.push(self.peek.unwrap());
+        loop {
+            self.get_char();
+            match self.peek {
+                Some(c) if self.ident_chars.contains(&c) => s.push(c),
+                _ => break,
+            }
+        };
+        if self.reserved_words.contains(&&s[..]) {
+            Token::Keyword(s)
+        } else if self.operators.contains(&&s[..]) {
+            Token::Operator(s)
+        } else {
+            Token::Ident(s)
+        }
+    }
+
+    fn get_op(&mut self) -> String {
+        let mut s = String::new();
+        s.push(self.peek.unwrap());
+        loop {
+            self.get_char();
+            match self.peek {
+                Some(c) if self.operator_chars.contains(&c) => s.push(c),
+                _ => break,
+            }
+        };
+        s
     }
 }
