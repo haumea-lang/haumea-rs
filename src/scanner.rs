@@ -33,7 +33,7 @@ pub enum Token {
     /// An integer number
     ///
     /// The content is the number read as an i64
-    Number(i64),
+    Number(i32),
     /// An identifier
     ///
     /// The content is the name of the identifier
@@ -81,9 +81,9 @@ impl<'a> Scanner<'a> {
             operators: vec!["+", "=", "-", "*", "/", "<", ">", ">=", "<=",
                             "~", "|", "&", "and", "or", "not", "(", ")", "!="],
             ident_chars: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_".chars().collect::<Vec<_>>(),
-            reserved_words: vec!["to", "with", "is", "a", "an", "returns", "return",
-                                 "do", "end", "if", "then", "else", "let", "be",
-                                 "set", "to", "change", "by"],
+            reserved_words: vec!["to", "with", "is", "return", "do", "end",
+                                 "if", "then", "else", "let", "be",
+                                 "set", "to", "change", "by",],
             peek: peek,
         }
     }
@@ -145,7 +145,7 @@ impl<'a> Scanner<'a> {
     }
 
     /// Returns the next number that can be found in self.source_chars
-    fn get_num(&mut self) -> i64 {
+    fn get_num(&mut self) -> i32 {
         let mut s = String::new();
         s.push(self.peek.unwrap());
         loop {
@@ -155,7 +155,7 @@ impl<'a> Scanner<'a> {
                 _ => break,
             }
         }
-        s.parse::<i64>().unwrap()
+        s.parse::<i32>().unwrap()
     }
 
     /// Returns an Token that contains the next identifier in self.source_chars

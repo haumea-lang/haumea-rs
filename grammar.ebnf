@@ -4,10 +4,10 @@
 
 <Function> = "to" <Ident> ["with" <Signature>] <Statement>
 
-<Signature> = "(" [<Ident> "is" <A> <Type> ","]* "returns" <A> <Type> ")"
+<Signature> = "(" [<Ident> ","]* ")"
 
 <Statement> = ( <Return> | <If> | <Do> |
-                              <Call> | <Let> | <Set> |
+                              <Call> | <Var> | <Set> |
                               <Change> )
 
 <Return> = "return" <Expression>
@@ -22,7 +22,7 @@
 
 <Else-Clause> = "else" <Statement>
 
-<Let> = "let" <Ident> "be" <A> <Type>
+<Var> = "variable" <Ident>
 
 <Set> = "set" <Ident> "to" <Expression>
 
@@ -39,7 +39,4 @@
 <Int> = ["0"|"1"|"2"|"3"|"4"|"4"|"5"|"6"|"7"|"8"|"9"]+
 <Float> = <Int> "." <Int>
 
-<A> = "a" | "an"
 <Ident> = /[a-zA-Z_/+/
-<Type> = <Basic-Type> | "[" <Type> "]" | "String"
-<Basic-Type> = "Integer" | "Float" | "Character"
