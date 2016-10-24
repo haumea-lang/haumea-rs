@@ -1,0 +1,14 @@
+/* factorial example */
+
+to factorial with (n) do
+    if n = 0 then do
+        return 1
+    end
+    else do
+        return n * factorial(n - 1)
+    end
+end
+
+to main do
+    write(factorial(5))
+end
