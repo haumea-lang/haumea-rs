@@ -7,7 +7,7 @@
 <Signature> = "(" [<Ident> ","]* ")"
 
 <Statement> = ( <Return> | <If> | <Do> |
-                              <Call> | <Var> | <Set> |
+                              <Call> | <Set> |
                               <Change> )
 
 <Return> = "return" <Expression>
@@ -21,8 +21,6 @@
 <If-Clause> = "if" <Expression> "then" <Statement>
 
 <Else-Clause> = "else" <Statement>
-
-<Var> = "variable" <Ident>
 
 <Set> = "set" <Ident> "to" <Expression>
 

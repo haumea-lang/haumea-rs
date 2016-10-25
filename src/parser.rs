@@ -93,6 +93,8 @@ pub enum Operator {
     Negate,
     /// Equals (=)
     Equals,
+    ///Not equals (!=)
+    NotEquals,
     /// Greater than (>)
     Gt,
     /// Lesser than (<)
@@ -190,6 +192,10 @@ fn parse_signature(mut token_stream: &mut Vec<Token>) -> Option<Signature> {
                 Token::Rp => break,
                 t @ _ => panic!(format!("Expected an identifier, but found {:?}!", t)),
             });
+            if token_stream[0] == Token::Rp {
+                token_stream.remove(0);
+                break;
+            }
             match_panic(&mut token_stream, Token::Comma);
         }
         Some(args)
@@ -199,6 +205,238 @@ fn parse_signature(mut token_stream: &mut Vec<Token>) -> Option<Signature> {
 }
 
 fn parse_statement(mut token_stream: &mut Vec<Token>) -> Statement {
+    match token_stream.remove(0) {
+        Token::Keyword(t) => {
+            if t == "return".to_string() {
+                parse_return(&mut token_stream)
+            } else if t == "do".to_string() {
+                parse_do(&mut token_stream)
+            } else if t == "if".to_string() {
+                parse_if(&mut token_stream)
+            } else if t == "set".to_string() {
+                parse_set(&mut token_stream)
+            } else if t == "change".to_string() {
+                parse_change(&mut token_stream)
+            } else {
+                panic!("Invalid statement!")
+            }
+        }
+        t @ Token::Ident(_) => {
+            token_stream.insert(0, t);
+            parse_call(&mut token_stream)
+        },
+        _ => panic!("Syntax error!"),
+    }
+    /*
     match_panic(&mut token_stream, Token::Ident("foo".to_string()));
-    Statement::Return(Expression::Integer(1))
+    Statement::Return(Expression::Integer(1))*/
+}
+
+fn parse_return(mut token_stream: &mut Vec<Token>) -> Statement {
+    Statement::Return(parse_expression(&mut token_stream))
+}
+
+fn parse_do(mut token_stream: &mut Vec<Token>) -> Statement {
+    let mut block = vec![];
+    while token_stream[0] != Token::Keyword("end".to_string()) {
+        block.push(Rc::new(parse_statement(&mut token_stream)));
+    }
+    token_stream.remove(0);
+    Statement::Do(block)
+}
+
+fn parse_if(mut token_stream: &mut Vec<Token>) -> Statement {
+    let cond = parse_expression(&mut token_stream);
+    match_panic(&mut token_stream, Token::Keyword("then".to_string()));
+    let if_clause = Rc::new(parse_statement(&mut token_stream));
+    let else_clause = Rc::new(if !token_stream.is_empty() &&
+                                 token_stream[0] == Token::Keyword("else".to_string()) {
+        match_panic(&mut token_stream, Token::Keyword("else".to_string()));
+        Some(parse_statement(&mut token_stream))
+    } else {
+        None
+    });
+    Statement::If {
+        cond: cond,
+        if_clause: if_clause,
+        else_clause: else_clause,
+    }
+}
+
+fn parse_set(mut token_stream: &mut Vec<Token>) -> Statement {
+    let ident = match token_stream.remove(0) {
+        Token::Ident(ident) => ident,
+        t @ _ => panic!(format!("Expected an identifier, but found {:?}!", t)),
+    };
+    match_panic(&mut token_stream, Token::Keyword("to".to_string()));
+    let expr = parse_expression(&mut token_stream);
+    Statement::Set(ident, expr)
+}
+
+fn parse_change(mut token_stream: &mut Vec<Token>) -> Statement {
+    let ident = match token_stream.remove(0) {
+        Token::Ident(ident) => ident,
+        t @ _ => panic!(format!("Expected an identifier, but found {:?}!", t)),
+    };
+    match_panic(&mut token_stream, Token::Keyword("by".to_string()));
+    let expr = parse_expression(&mut token_stream);
+    Statement::Change(ident, expr)
+}
+
+fn parse_call(mut token_stream: &mut Vec<Token>) -> Statement {
+    let ident = match token_stream.remove(0) {
+        Token::Ident(ident) => ident,
+        t @ _ => panic!(format!("Expected an identifier, but found {:?}!", t)),
+    };
+    match_panic(&mut token_stream, Token::Lp);
+    let mut args = vec![];
+    if token_stream[0] != Token::Rp {
+        loop {
+            args.push(parse_expression(&mut token_stream));
+            if token_stream[0] == Token::Rp {
+                token_stream.remove(0);
+                break;
+            }
+            match_panic(&mut token_stream, Token::Comma);
+        }
+    }
+    Statement::Call{
+        function: ident,
+        arguments: args,
+    }
+}
+
+fn parse_expression(mut token_stream: &mut Vec<Token>) -> Expression {
+    prec_4(&mut token_stream)
+}
+
+fn prec_0(mut token_stream: &mut Vec<Token>) -> Expression {
+    if token_stream[0] == Token::Lp {
+        token_stream.remove(0);
+        let exp = parse_expression(&mut token_stream);
+        match_panic(&mut token_stream, Token::Rp);
+        exp
+    } else {
+        match token_stream.remove(0) {
+            Token::Number(n) => Expression::Integer(n),
+            Token::Ident(id) => Expression::Ident(id),
+            t @ _ => panic!(format!("Expected an expression, not {:?}", t)),
+        }
+    }
+}
+
+fn prec_1(mut token_stream: &mut Vec<Token>) -> Expression {
+    let lh = prec_0(&mut token_stream);
+    if !token_stream.is_empty() {
+        let op = match token_stream.get(0) {
+            Some(&Token::Operator(ref name)) => {
+                if *name == "*".to_string() {
+                    Operator::Mul
+                } else if *name == "/".to_string() {
+                    Operator::Div
+                } else {
+                    return lh
+                }
+            },
+            _ => return lh,
+        };
+        token_stream.remove(0);
+        let rh = prec_1(&mut token_stream);
+        Expression::BinaryOp {
+            operator: op,
+            left: Rc::new(lh),
+            right: Rc::new(rh),
+        }
+    } else {
+        lh
+    }
+}
+
+fn prec_2(mut token_stream: &mut Vec<Token>) -> Expression {
+    let lh = prec_1(&mut token_stream);
+    if !token_stream.is_empty() {
+        let op = match token_stream.get(0) {
+            Some(&Token::Operator(ref name)) => {
+                if *name == "+".to_string() {
+                    Operator::Add
+                } else if *name == "-".to_string() {
+                    Operator::Sub
+                } else {
+                    return lh
+                }
+            },
+            _ => return lh,
+        };
+        token_stream.remove(0);
+        let rh = prec_2(&mut token_stream);
+        Expression::BinaryOp {
+            operator: op,
+            left: Rc::new(lh),
+            right: Rc::new(rh),
+        }
+    } else {
+        lh
+    }
+}
+
+fn prec_3(mut token_stream: &mut Vec<Token>) -> Expression {
+    let lh = prec_2(&mut token_stream);
+    if !token_stream.is_empty() {
+        let op = match token_stream.get(0) {
+            Some(&Token::Operator(ref name)) => {
+                if *name == ">".to_string() {
+                    Operator::Gt
+                } else if *name == ">=".to_string() {
+                    Operator::Gte
+                } else if *name == "<".to_string() {
+                    Operator::Lt
+                } else if *name == "<=".to_string() {
+                    Operator::Lte
+                } else if *name == "=".to_string() {
+                    Operator::Equals
+                } else if *name == "!=".to_string() {
+                    Operator::NotEquals
+                } else {
+                    return lh
+                }
+            },
+            _ => return lh
+        };
+        token_stream.remove(0);
+        let rh = prec_3(&mut token_stream);
+        Expression::BinaryOp {
+            operator: op,
+            left: Rc::new(lh),
+            right: Rc::new(rh),
+        }
+    } else {
+        lh
+    }
+}
+
+fn prec_4(mut token_stream: &mut Vec<Token>) -> Expression {
+    let lh = prec_3(&mut token_stream);
+    if !token_stream.is_empty() {
+        let op = match token_stream.get(0) {
+            Some(&Token::Operator(ref name)) => {
+                if *name == "and".to_string() {
+                    Operator::LogicalAnd
+                } else if *name == "or".to_string() {
+                    Operator::LogicalOr
+                } else {
+                    return lh
+                }
+            },
+            _ => return lh
+        };
+        token_stream.remove(0);
+        let rh = prec_4(&mut token_stream);
+        Expression::BinaryOp {
+            operator: op,
+            left: Rc::new(lh),
+            right: Rc::new(rh),
+        }
+    } else {
+        lh
+    }
 }
