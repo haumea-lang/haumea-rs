@@ -225,7 +225,7 @@ fn parse_statement(mut token_stream: &mut Vec<Token>) -> Statement {
             token_stream.insert(0, t);
             parse_call(&mut token_stream)
         },
-        _ => panic!("Syntax error!"),
+        t @ _ => panic!("Syntax error! {:?}", t),
     }
     /*
     match_panic(&mut token_stream, Token::Ident("foo".to_string()));
@@ -319,7 +319,28 @@ fn prec_0(mut token_stream: &mut Vec<Token>) -> Expression {
     } else {
         match token_stream.remove(0) {
             Token::Number(n) => Expression::Integer(n),
-            Token::Ident(id) => Expression::Ident(id),
+            Token::Ident(id) => {
+                if token_stream[0] == Token::Lp {
+                    match_panic(&mut token_stream, Token::Lp);
+                    let mut args = vec![];
+                    if token_stream[0] != Token::Rp {
+                        loop {
+                            args.push(Rc::new(parse_expression(&mut token_stream)));
+                            if token_stream[0] == Token::Rp {
+                                token_stream.remove(0);
+                                break;
+                            }
+                            match_panic(&mut token_stream, Token::Comma);
+                        }
+                    }
+                    Expression::Call{
+                        function: id,
+                        arguments: args,
+                    }
+                } else {
+                    Expression::Ident(id)
+                }
+            },
             t @ _ => panic!(format!("Expected an expression, not {:?}", t)),
         }
     }
