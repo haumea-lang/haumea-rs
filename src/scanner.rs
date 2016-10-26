@@ -83,7 +83,7 @@ impl<'a> Scanner<'a> {
             ident_chars: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_".chars().collect::<Vec<_>>(),
             reserved_words: vec!["to", "with", "is", "return", "do", "end",
                                  "if", "then", "else", "let", "be",
-                                 "set", "to", "change", "by",],
+                                 "set", "to", "change", "by", "variable"],
             peek: peek,
         }
     }
