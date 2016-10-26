@@ -1,26 +1,12 @@
 extern crate haumea;
+use std::io;
+use std::io::prelude::*;
 
 fn main() {
-    let source = "
-	to factorial with (n) do
-	    if n = 0 then do
-	        return 1
-	    end
-	    else do
-	        return n * factorial(n - 1)
-	    end
-	end
-
-	to main do
-	    display(factorial(5))
-	end
-    ";
-
-   /* let scanner = haumea::scanner::Scanner::new(source);
-	for tok in scanner {
-		println!("{:?}", tok)
-	} */
-	let scanner = haumea::scanner::Scanner::new(source);
+    let mut source = String::new();
+	let mut stdin = io::stdin();
+	stdin.read_to_string(&mut source).expect("Must provide input");
+	let scanner = haumea::scanner::Scanner::new(&source);
 	let ast = haumea::parser::parse(scanner);
     //println!("{:?}", ast);
 	let mut out = String::new();
