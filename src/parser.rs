@@ -40,10 +40,14 @@ pub enum Statement {
     ///
     /// return 1
     Return(Expression),
-    /// A let statement
+/*    /// A let statement
     ///
     /// let x be an Integer
-    Let(Ident, Type),
+    Let(Ident, Type), */
+	/// A variable statement
+	///
+	/// variable x
+	Var(Ident),
     /// An assignment statement
     ///
     /// set x to 5
@@ -217,6 +221,8 @@ fn parse_statement(mut token_stream: &mut Vec<Token>) -> Statement {
                 parse_set(&mut token_stream)
             } else if t == "change".to_string() {
                 parse_change(&mut token_stream)
+			} else if t == "variable".to_string() {
+				parse_declare(&mut token_stream)
             } else {
                 panic!("Invalid statement!")
             }
@@ -233,9 +239,16 @@ fn parse_statement(mut token_stream: &mut Vec<Token>) -> Statement {
 }
 
 fn parse_return(mut token_stream: &mut Vec<Token>) -> Statement {
-    Statement::Return(parse_expression(&mut token_stream))
+	Statement::Return(parse_expression(&mut token_stream))
 }
 
+fn parse_declare(mut token_stream: &mut Vec<Token>) -> Statement {
+	let ident = match token_stream.remove(0) {
+		Token::Ident(ident) => ident,
+		t @ _ => panic!("Expected an identifier, not {:?}!", t),
+	};
+    Statement::Var(ident)
+}
 fn parse_do(mut token_stream: &mut Vec<Token>) -> Statement {
     let mut block = vec![];
     while token_stream[0] != Token::Keyword("end".to_string()) {
@@ -319,6 +332,16 @@ fn prec_0(mut token_stream: &mut Vec<Token>) -> Expression {
     } else {
         match token_stream.remove(0) {
             Token::Number(n) => Expression::Integer(n),
+			Token::Operator(op) => {
+				if op == "-".to_string() {
+					Expression::UnaryOp {
+						operator: Operator::Sub,
+						expression: Rc::new(parse_expression(&mut token_stream))
+					}
+				} else {
+					panic!("Expected an expression, not {:?}", op)
+				}
+			}
             Token::Ident(id) => {
                 if token_stream[0] == Token::Lp {
                     match_panic(&mut token_stream, Token::Lp);
