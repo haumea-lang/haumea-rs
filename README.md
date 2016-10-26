@@ -7,7 +7,7 @@ Haumea is an experimental language created by BookOwl to learn Rust, parsing, an
 First, make sure that you have Rust and Cargo installed. Then run the following commands:
 
 ```
-$ git clone https://github.com/BookOwl/haumea
+$ git clone https://github.com/BookOwl/haumea.git
 $ cargo build 
 ```
 
