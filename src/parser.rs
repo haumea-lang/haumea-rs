@@ -22,15 +22,15 @@ pub type Signature = Vec<String>;
 #[derive(Debug)]
 pub struct Function {
     /// The name of the function
-    name: String,
+    pub name: String,
     /// The signature of the function
     ///
     /// It is a Some(Signature) when there is a signature,
     /// or None if there is no signature, which means that
     /// the function takes no arguments and return the Integer 0
-    signature: Option<Signature>,
+    pub signature: Option<Signature>,
     /// The code of the function
-    code: Statement,
+    pub code: Statement,
 }
 
 /// A Haumea statement
