@@ -10,5 +10,5 @@ to factorial with (n) do
 end
 
 to main do
-    write(factorial(5))
+    display(factorial(5))
 end
