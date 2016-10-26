@@ -1,6 +1,6 @@
 ![Haumea logo](Haumea logo.png)
 
-Haumea is an expirimental language created by BookOwl to learn Rust, parsing, and code generation.
+Haumea is an experimental language created by BookOwl to learn Rust, parsing, and code generation.
 
 # Using
 
