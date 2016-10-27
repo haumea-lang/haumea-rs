@@ -1,10 +1,10 @@
 ![Haumea logo](Haumea logo.png)
 
+[![Join the chat at https://gitter.im/haumea-lang/Lobby](https://badges.gitter.im/haumea-lang/Lobby.svg)](https://gitter.im/haumea-lang/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Haumea is an experimental language created by BookOwl to learn Rust, parsing, and code generation.
 
 # Using
-
-[![Join the chat at https://gitter.im/haumea-lang/Lobby](https://badges.gitter.im/haumea-lang/Lobby.svg)](https://gitter.im/haumea-lang/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 First, make sure that you have Rust and Cargo installed. Then run the following commands:
 
@@ -41,7 +41,7 @@ to main do
 end
 ```
 
-# Find a bug, or want to request an issue?
+# Find a bug, or want to request a feature?
 Please create an issue with your bug report or pull request.
 
 # Haumea reference.
