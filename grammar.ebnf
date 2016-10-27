@@ -7,8 +7,8 @@
 <Signature> = "(" [<Ident> ","]* ")"
 
 <Statement> = ( <Return> | <If> | <Do> |
-                              <Call> | <Set> |
-                              <Change> )
+                <Call> | <Set> | <Change> |
+				<Forever> | <While> | <For-Each> )
 
 <Return> = "return" <Expression>
 
@@ -25,6 +25,14 @@
 <Set> = "set" <Ident> "to" <Expression>
 
 <Change> = "change" <Ident> "by" <Expression>
+
+<Forever> = "forever" <Statement>
+
+<While> = "while" <Expression> <Statement>
+
+<For-Each> = "for each" <Ident> in <Range> <Statement>
+
+<Range> = <Expression> to <Expression> ["by" <Expression>]
 
 <Expression> = <Term> [<Addop> <Term>]*
 <Term> = <S-Factor> [<Mullop> <S-Factor>]*
