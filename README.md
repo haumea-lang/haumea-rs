@@ -53,6 +53,8 @@ Haumea is released under the MIT license. Please see LICENSE.txt for details.
 
 # Credits
 @BookOwl - Created the langauge
+
 @nanalan - Made an amazing logo
+
 Many other people who have helped with design decisions
 
