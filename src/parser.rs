@@ -80,6 +80,25 @@ pub enum Statement {
         function: Ident,
         arguments: Vec<Expression>,
     },
+	/// A forever loop
+	///
+	/// forever do ... end
+	Forever(Rc<Statement>),
+	/// A while loop
+	///
+	/// while x < 5 change x by 1
+	While {
+        cond: Expression,
+        body: Rc<Statement>,
+	},
+	/// A for each loop
+	ForEach {
+		ident: Ident,
+		start: Expression,
+		end: Expression,
+		by: Expression,
+		body: Rc<Statement>,
+	}
 }
 
 /// The operators in Haumea
@@ -223,7 +242,13 @@ fn parse_statement(mut token_stream: &mut Vec<Token>) -> Statement {
                 parse_change(&mut token_stream)
 			} else if t == "variable".to_string() {
 				parse_declare(&mut token_stream)
-            } else {
+			} else if t == "forever".to_string() {
+				parse_forever(&mut token_stream)
+			} else if t == "while".to_string() {
+				parse_while(&mut token_stream)
+			} else if t == "for".to_string() {
+				parse_for_each(&mut token_stream)
+			} else {
                 panic!("Invalid statement!")
             }
         }
@@ -236,6 +261,46 @@ fn parse_statement(mut token_stream: &mut Vec<Token>) -> Statement {
     /*
     match_panic(&mut token_stream, Token::Ident("foo".to_string()));
     Statement::Return(Expression::Integer(1))*/
+}
+
+fn parse_forever(mut token_stream: &mut Vec<Token>) -> Statement {
+	Statement::Forever(Rc::new(parse_statement(&mut token_stream)))
+}
+
+fn parse_while(mut token_stream: &mut Vec<Token>) -> Statement {
+	Statement::While{
+		cond: parse_expression(&mut token_stream),
+		body: Rc::new(parse_statement(&mut token_stream))
+	}
+}
+
+fn parse_for_each(mut token_stream: &mut Vec<Token>) -> Statement {
+	match_panic(&mut token_stream, Token::Keyword("each".to_string()));
+	let ident = match token_stream.remove(0) {
+		Token::Ident(name) => name,
+		t @ _ => panic!("Expected an identifier, not {:?}", t)
+	};
+	match_panic(&mut token_stream, Token::Keyword("in".to_string()));
+	let start = parse_expression(&mut token_stream);
+	match_panic(&mut token_stream, Token::Keyword("to".to_string()));
+	let end = parse_expression(&mut token_stream);
+	let by = match token_stream[0] {
+		Token::Keyword(ref kw) => kw == &"by".to_string(),
+		_ => false,
+	};
+	let by = if by {
+		token_stream.remove(0);
+		parse_expression(&mut token_stream)
+	} else {
+		Expression::Integer(1)
+	};
+	Statement::ForEach {
+		ident: ident,
+		start: start,
+		end: end,
+		by: by,
+		body: Rc::new(parse_statement(&mut token_stream))
+	}
 }
 
 fn parse_return(mut token_stream: &mut Vec<Token>) -> Statement {

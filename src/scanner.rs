@@ -82,7 +82,8 @@ impl<'a> Scanner<'a> {
                             "~", "|", "&", "and", "or", "not", "(", ")", "!="],
             ident_chars: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_".chars().collect::<Vec<_>>(),
             reserved_words: vec!["to", "with", "is", "return", "do", "end",
-                                 "if", "then", "else", "let", "be",
+                                 "if", "then", "else", "let", "be", "forever",
+								 "while", "for", "each", "in",
                                  "set", "to", "change", "by", "variable"],
             peek: peek,
         }
