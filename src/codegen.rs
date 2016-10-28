@@ -57,8 +57,8 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
 	
 	match statement {
 		Statement::Return(exp) => {
-			out.push_str(&format!("{:}return {:};", 
-			                      replicate(INDENT, indent), 
+			out.push_str(&format!("{:}return {:};",
+			                      replicate(INDENT, indent),
 			                      compile_expression(exp)));
 		},
 		Statement::Do(block) => {
@@ -77,7 +77,7 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
 			arguments: args,
 		} => {
 			out.push_str(&format!("{:}{:}(", replicate(INDENT, indent), func));
-			let len = args.len();		
+			let len = args.len();
 			for (index, arg) in args.into_iter().enumerate() {
 				if index == len-1 {
 					out.push_str(&compile_expression(arg));
@@ -91,15 +91,15 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
 			out.push_str(&format!("{:}long {:};\n", replicate(INDENT, indent), ident));
 		},
 		Statement::Set(ident, expr) => {
-			out.push_str(&format!("{:}{:} = {:};\n", 
-			                      replicate(INDENT, indent), 
+			out.push_str(&format!("{:}{:} = {:};\n",
+			                      replicate(INDENT, indent),
 			                      ident,
 							      compile_expression(expr)
 							  ));
 		},
 		Statement::Change(ident, expr) => {
-			out.push_str(&format!("{:}{:} += {:};\n", 
-			                      replicate(INDENT, indent), 
+			out.push_str(&format!("{:}{:} += {:};\n",
+			                      replicate(INDENT, indent),
 			                      ident,
 							      compile_expression(expr)
 							  ));
@@ -108,7 +108,7 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
 			cond,
 			if_clause,
 			else_clause,
-		} => {	
+		} => {
 			out.push_str(&format!("{:}if ", replicate(INDENT, indent)));
 			out.push_str(&format!(" {:} ", compile_expression(cond)));
 			let if_clause = match Rc::try_unwrap(if_clause) {
@@ -137,7 +137,7 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
 			cond,
 			body,
 		} => {
-			out.push_str(&format!("{:}while {:} ", replicate(INDENT, indent), 
+			out.push_str(&format!("{:}while {:} ", replicate(INDENT, indent),
 			                                       compile_expression(cond)));
 			let body = match Rc::try_unwrap(body) {
 				Ok(body) => body,
@@ -155,18 +155,18 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
 			let start_name = get_unique_name();
 			let end_name = get_unique_name();
 			let by_name = get_unique_name();
-			out.push_str(&format!("{:}long {:} = {:};\n", 
-			                      replicate(INDENT, indent), 
+			out.push_str(&format!("{:}long {:} = {:};\n",
+			                      replicate(INDENT, indent),
 								  start_name,
 							      compile_expression(start)
 							  ));
-			out.push_str(&format!("{:}long {:} = {:};\n", 
-			                      replicate(INDENT, indent), 
+			out.push_str(&format!("{:}long {:} = {:};\n",
+			                      replicate(INDENT, indent),
 								  end_name,
 							      compile_expression(end))
 							  );
-  			out.push_str(&format!("{:}long {:} = {:};\n", 
-  			                      replicate(INDENT, indent), 
+  			out.push_str(&format!("{:}long {:} = {:};\n",
+  			                      replicate(INDENT, indent),
   								  by_name,
   							      compile_expression(by))
 							  );
@@ -201,7 +201,7 @@ fn compile_expression(expr: parser::Expression) -> String {
 			    Ok(rh) => rh,
 				Err(_) => panic!("Could not compile!"),
 			};
-			format!("({:} {:} {:})", 
+			format!("({:} {:} {:})",
 			         compile_expression(lh),
 				     get_c_name(op),
 				     compile_expression(rh)
@@ -213,7 +213,7 @@ fn compile_expression(expr: parser::Expression) -> String {
 		} => {
 			let mut out = String::new();
 			out.push_str(&format!("{:}(", func));
-			let len = args.len();		
+			let len = args.len();
 			for (index, arg) in args.into_iter().enumerate() {
 				let arg = match Rc::try_unwrap(arg) {
 				    Ok(arg) => arg,
@@ -236,7 +236,7 @@ fn compile_expression(expr: parser::Expression) -> String {
 			    Ok(exp) => exp,
 				Err(_) => panic!("Could not compile!"),
 			};
-			format!("({:}{:})", 
+			format!("({:}{:})",
 				     get_c_name(op),
 				     compile_expression(exp)
 				   )
