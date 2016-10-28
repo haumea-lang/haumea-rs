@@ -1,4 +1,4 @@
-![Haumea logo](Haumea logo.png)
+![Haumea logo](haumea.png)
 
 [![Join the chat at https://gitter.im/haumea-lang/Lobby](https://badges.gitter.im/haumea-lang/Lobby.svg)](https://gitter.im/haumea-lang/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -10,7 +10,7 @@ First, make sure that you have Rust and Cargo installed. Then run the following 
 
 ```
 $ git clone https://github.com/BookOwl/haumea.git
-$ cargo build 
+$ cargo build
 ```
 
 To run the compiler, use the following commands:
