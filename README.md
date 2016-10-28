@@ -17,7 +17,7 @@ To run the compiler, use the following commands:
 
 ```
 # Compile the .hau file to a .c
-$ in.hau < ./target/debug/haumea > out.c
+$ ./target/debug/haumea < in.hau > out.c
 # Compile the .c
 $ gcc out.c -o out
 ```
