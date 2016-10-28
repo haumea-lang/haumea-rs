@@ -22,6 +22,8 @@ const EPILOG: &'static str = "
 /* End compiled program */
 ";
 
+static mut _name_number: i32 = 0;
+
 /// Compile an Program created by parser::parse into a C program
 pub fn compile_ast(mut out: &mut String, ast: parser::Program) {
     out.push_str(PROLOG);
@@ -122,6 +124,60 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
 				out.push_str(&format!("{:}else ", replicate(INDENT, indent)));
 				compile_statement(&mut out, else_, indent+1);
 			}
+		},
+		Statement::Forever(block) => {
+			out.push_str(&format!("{:}while (1) ", replicate(INDENT, indent)));
+			let block = match Rc::try_unwrap(block) {
+				Ok(block) => block,
+				Err(_) => panic!("Could not compile!"),
+			};
+			compile_statement(&mut out, block, indent+1);
+		},
+		Statement::While {
+			cond,
+			body,
+		} => {
+			out.push_str(&format!("{:}while {:} ", replicate(INDENT, indent), 
+			                                       compile_expression(cond)));
+			let body = match Rc::try_unwrap(body) {
+				Ok(body) => body,
+				Err(_) => panic!("Could not compile!"),
+			};
+			compile_statement(&mut out, body, indent+1);
+		},
+		Statement::ForEach {
+			ident,
+			start,
+			end,
+			by,
+			body,
+		} => {
+			let start_name = get_unique_name();
+			let end_name = get_unique_name();
+			let by_name = get_unique_name();
+			out.push_str(&format!("{:}long {:} = {:};\n", 
+			                      replicate(INDENT, indent), 
+								  start_name,
+							      compile_expression(start)
+							  ));
+			out.push_str(&format!("{:}long {:} = {:};\n", 
+			                      replicate(INDENT, indent), 
+								  end_name,
+							      compile_expression(end))
+							  );
+  			out.push_str(&format!("{:}long {:} = {:};\n", 
+  			                      replicate(INDENT, indent), 
+  								  by_name,
+  							      compile_expression(by))
+							  );
+		    out.push_str(&format!("{:}for (long {:} = {:}; {:} < {:}; {:} += {:})", replicate(INDENT, indent),
+			                      ident, start_name, ident, end_name, ident, by_name
+		                          ));
+  			let body = match Rc::try_unwrap(body) {
+  				Ok(body) => body,
+  				Err(_) => panic!("Could not compile!"),
+  			};
+		    compile_statement(&mut out, body, indent+1);
 		},
 	}
 }
@@ -225,5 +281,13 @@ fn get_c_name(op: parser::Operator) -> &'static str {
 	    BinaryAnd => "&",
 	    BinaryOr => "|",
 	    BinaryNot => "~",
+	}
+}
+
+/// Returns a unique variable name
+fn get_unique_name() -> String {
+	unsafe {
+		_name_number += 1;
+		format!("____HAUMEA_TEMP_{:}", _name_number)
 	}
 }

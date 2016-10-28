@@ -30,7 +30,7 @@
 
 <While> = "while" <Expression> <Statement>
 
-<For-Each> = "for each" <Ident> in <Range> <Statement>
+<For-Each> = "for each" <Ident> "in" <Range> <Statement>
 
 <Range> = <Expression> to <Expression> ["by" <Expression>]
 
