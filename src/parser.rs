@@ -97,6 +97,7 @@ pub enum Statement {
 		start: Expression,
 		end: Expression,
 		by: Expression,
+        range_type: String,
 		body: Rc<Statement>,
 	}
 }
@@ -282,8 +283,19 @@ fn parse_for_each(mut token_stream: &mut Vec<Token>) -> Statement {
 	};
 	match_panic(&mut token_stream, Token::Keyword("in".to_string()));
 	let start = parse_expression(&mut token_stream);
-	match_panic(&mut token_stream, Token::Keyword("to".to_string()));
-	let end = parse_expression(&mut token_stream);
+    
+	let range_token = token_stream.remove(0);
+    let end = parse_expression(&mut token_stream);
+    let range_type;
+    
+    if range_token == Token::Keyword("to".to_string()) {
+        range_type = "to";
+    } else if range_token == Token::Keyword("through".to_string()) {
+        range_type = "through";
+    } else {
+        panic!("Expected 'to' or 'through', not {:?}", range_token);
+    }
+    
 	let by = match token_stream[0] {
 		Token::Keyword(ref kw) => kw == &"by".to_string(),
 		_ => false,
@@ -299,6 +311,7 @@ fn parse_for_each(mut token_stream: &mut Vec<Token>) -> Statement {
 		start: start,
 		end: end,
 		by: by,
+        range_type: range_type.to_string(),
 		body: Rc::new(parse_statement(&mut token_stream))
 	}
 }

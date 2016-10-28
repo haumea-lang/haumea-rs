@@ -150,8 +150,18 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
 			start,
 			end,
 			by,
+            range_type,
 			body,
 		} => {
+            let comparitor;
+            if range_type == "to".to_string() {
+                comparitor = "<";
+            } else if range_type == "through".to_string() {
+                comparitor = "<=";
+            } else {
+                panic!("Could not compile!")
+            }
+            
 			let start_name = get_unique_name();
 			let end_name = get_unique_name();
 			let by_name = get_unique_name();
@@ -170,8 +180,8 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
   								  by_name,
   							      compile_expression(by))
 							  );
-		    out.push_str(&format!("{:}for (long {:} = {:}; {:} < {:}; {:} += {:})", replicate(INDENT, indent),
-			                      ident, start_name, ident, end_name, ident, by_name
+		    out.push_str(&format!("{:}for (long {:} = {:}; {:} {:} {:}; {:} += {:})", replicate(INDENT, indent),
+			                      ident, start_name, ident, comparitor, end_name, ident, by_name
 		                          ));
   			let body = match Rc::try_unwrap(body) {
   				Ok(body) => body,

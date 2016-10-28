@@ -1,0 +1,11 @@
+to main do
+  for each i in 1 to 5 do
+    /* 1 2 3 4 5 */
+    display(i)
+  end
+  
+  for each i in 1 through 5 do
+    /* 1 2 3 4 5 */
+    display(i)
+  end
+end

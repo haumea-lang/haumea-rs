@@ -33,6 +33,7 @@
 <For-Each> = "for each" <Ident> "in" <Range> <Statement>
 
 <Range> = <Expression> to <Expression> ["by" <Expression>]
+        | <Expression> through <Expression>
 
 <Expression> = <Term> [<Addop> <Term>]*
 <Term> = <S-Factor> [<Mullop> <S-Factor>]*

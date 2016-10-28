@@ -84,7 +84,7 @@ impl<'a> Scanner<'a> {
             reserved_words: vec!["to", "with", "is", "return", "do", "end",
                                  "if", "then", "else", "let", "be", "forever",
 								 "while", "for", "each", "in",
-                                 "set", "to", "change", "by", "variable"],
+                                 "set", "to", "through", "change", "by", "variable"],
             peek: peek,
         }
     }
