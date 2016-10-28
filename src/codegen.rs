@@ -47,7 +47,7 @@ fn compile_function(mut out: &mut String, func: parser::Function) {
 			out.push_str(&format!("long {:}", last_param));
 		}
 	}
-	out.push_str(")");
+	out.push_str(") ");
 	compile_statement(&mut out, func.code, 0);
 }
 

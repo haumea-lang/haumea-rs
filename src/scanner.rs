@@ -2,7 +2,7 @@
 /// The scanner for the haumea language
 
 use std::str::Chars; // We need to bring the Chars struct into scope
-
+use std::iter::Peekable;
 /// The scanner struct
 #[derive(Debug)]
 pub struct Scanner<'a> {
@@ -13,7 +13,7 @@ pub struct Scanner<'a> {
     /// to keep it in scope so that the source_chars iterator can work
     pub source_str: &'a str,
     /// An iterator of chars over the source str
-    source_chars: Chars<'a>,
+    source_chars: Peekable<Chars<'a>>,
     /// A vector of chars that can be in operators
     operator_chars: Vec<char>,
     /// A vector of allowed operators
@@ -72,7 +72,7 @@ impl<'a> Scanner<'a> {
     /// assert_eq!(scanner.peek, Some(' '));
     /// ```
     pub fn new(source: &'a str) -> Scanner {
-        let chars = source.chars();
+        let chars = source.chars().peekable();
         let peek = Some(' ');
         Scanner {
             source_str: source,
@@ -143,8 +143,59 @@ impl<'a> Scanner<'a> {
                 _ => break,
             }
         }
+		self.skip_comments();
+        loop {
+            match self.peek {
+                Some(c) if c.is_whitespace() => {
+                    self.get_char()
+                }
+                _ => break,
+            }
+        }
     }
-
+	
+	/// Skips over comments in self.source_chars
+	fn skip_comments(&mut self) {
+		let should_skip =  match self.peek {
+			Some(c) if c == '/' => {
+				if let Some(n) = self.source_chars.peek() {
+					if n == &'*' {
+						true
+					} else {
+						false
+					}
+				} else {
+					false
+				}
+			},
+			_ => false
+		};
+		if should_skip {
+			self.skip_until_comment_end()
+		}
+	}
+	
+	/// Skips until the end of a comment
+	fn skip_until_comment_end(&mut self) {
+		self.get_char(); // Skip the ? in the start of the comment
+		loop {
+		    self.get_char();
+			match self.peek {
+				Some(c) if c == '*' => {
+					if let Some(n) = self.source_chars.peek() {
+						if n == &'/' {
+							break;
+						}
+					}
+				},
+				Some(c) if c == '/' => self.skip_comments(),
+				_ => ()
+			}
+		}
+		self.get_char();
+		self.get_char();
+	}
+	
     /// Returns the next number that can be found in self.source_chars
     fn get_num(&mut self) -> i32 {
         let mut s = String::new();

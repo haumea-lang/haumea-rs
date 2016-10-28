@@ -1,5 +1,6 @@
+/* Returns the factorial of n */
 to factorial with (n) do
-    if n = 0 then do
+    if n = 0 then do 
         return 1
     end
     else do
