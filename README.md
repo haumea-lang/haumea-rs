@@ -4,8 +4,7 @@
 
 [![Join the chat at https://gitter.im/haumea-lang/Lobby](https://badges.gitter.im/haumea-lang/Lobby.svg)](https://gitter.im/haumea-lang/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Haumea is an experimental language created by BookOwl to learn Rust, parsing, and code generation.
-
+Haumea is an experimental language designed to be easy to learn and use.
 # Using
 
 First, make sure that you have Rust and Cargo installed. Then run the following commands:
@@ -51,3 +50,9 @@ Please check out the wiki for the Haumea reference and a tutorial.
 
 # License
 Haumea is released under the MIT license. Please see LICENSE.txt for details.
+
+# Credits
+@BookOwl - Created the langauge
+@nanalan - Made an amazing logo
+Many other people who have helped with design decisions
+
