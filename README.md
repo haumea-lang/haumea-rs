@@ -1,6 +1,6 @@
-<align ='center'>
+<div align='center'>
   <img src='haumea.png' alt='Haumea'>
-</align>
+</div>
 
 [![Join the chat at https://gitter.im/haumea-lang/Lobby](https://badges.gitter.im/haumea-lang/Lobby.svg)](https://gitter.im/haumea-lang/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
