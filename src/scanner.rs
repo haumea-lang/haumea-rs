@@ -142,8 +142,8 @@ impl<'a> Scanner<'a> {
                 }
                 _ => break,
             }
-        }
-	    self.skip_comments();
+		}
+		self.skip_comments();
         loop {
             match self.peek {
                 Some(c) if c.is_whitespace() => {
