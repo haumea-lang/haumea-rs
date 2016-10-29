@@ -48,9 +48,9 @@ fn compile_function(mut out: &mut String, func: parser::Function) {
 		}
 	}
 	out.push_str(") ");
-        out.push_str("{{");
+        out.push_str("{");
 	compile_statement(&mut out, func.code, 1);
-        out.push_str("}}");
+        out.push_str("}");
 }
 
 /// Compiles a statement
