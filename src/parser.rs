@@ -421,7 +421,7 @@ fn prec_0(mut token_stream: &mut Vec<Token>) -> Expression {
 				}
 			}
             Token::Ident(id) => {
-                if token_stream[0] == Token::Lp {
+                if !token_stream.is_empty() && token_stream[0] == Token::Lp {
                     match_panic(&mut token_stream, Token::Lp);
                     let mut args = vec![];
                     if token_stream[0] != Token::Rp {
