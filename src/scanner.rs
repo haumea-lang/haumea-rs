@@ -159,11 +159,7 @@ impl<'a> Scanner<'a> {
 		let should_skip =  match self.peek {
 			Some(c) if c == '/' => {
 				if let Some(n) = self.source_chars.peek() {
-					if n == &'*' {
-						true
-					} else {
-						false
-					}
+					n == &'*'
 				} else {
 					false
 				}

@@ -24,7 +24,7 @@ const EPILOG: &'static str = "
 
 static mut _name_number: i32 = 0;
 
-/// Compile an Program created by parser::parse into a C program
+/// Compile an Program created by `parser::parse` into a C program
 pub fn compile_ast(mut out: &mut String, ast: parser::Program) {
     out.push_str(PROLOG);
     for func in ast {
@@ -36,7 +36,7 @@ pub fn compile_ast(mut out: &mut String, ast: parser::Program) {
 /// Compiles a Function
 fn compile_function(mut out: &mut String, func: parser::Function) {
     write_newline(&mut out);
-    out.push_str(if func.name == "main".to_string() { "int " } else { "long " });
+    out.push_str(if func.name == "main" { "int " } else { "long " });
     out.push_str(&func.name);
 	out.push_str("(");
 	if let Some(sig) = func.signature {
@@ -156,9 +156,9 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
 			body,
 		} => {
             let comparitor;
-            if range_type == "to".to_string() {
+            if range_type == "to" {
                 comparitor = "<";
-            } else if range_type == "through".to_string() {
+            } else if range_type == "through" {
                 comparitor = "<=";
             } else {
                 panic!("Could not compile!")
@@ -277,10 +277,9 @@ fn get_c_name(op: parser::Operator) -> &'static str {
 	use parser::Operator::*;
 	match op {
 	    Add => "+",
-	    Sub => "-",
+	    Sub | Negate => "-",
 	    Mul => "*",
 	    Div => "/",
-	    Negate => "-",
 	    Equals => "==",
 	    NotEquals => "!=",
 	    Gt => ">",
