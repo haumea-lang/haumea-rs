@@ -180,19 +180,19 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
                                   end_name,
                                   compile_expression(end))
                               );
-              out.push_str(&format!("{:}long {:} = {:};\n",
-                                    replicate(INDENT, indent),
-                                    by_name,
-                                    compile_expression(by))
+            out.push_str(&format!("{:}long {:} = {:};\n",
+                                  replicate(INDENT, indent),
+                                  by_name,
+                                  compile_expression(by))
                               );
             let comp = format!("({:} < {:} ? {:} {:} {:} : {:} {:} {:})", 
                                start_name, end_name, ident, comparitor, end_name, ident, neg_comparitor, end_name);
             out.push_str(&format!("{:}for (long {:} = {:}; {:}; {:} += {:})", replicate(INDENT, indent),
                                   ident, start_name, comp, ident, by_name
                                   ));
-              let body = match Rc::try_unwrap(body) {
-                  Ok(body) => body,
-                  Err(_) => panic!("Could not compile!"),
+            let body = match Rc::try_unwrap(body) {
+                Ok(body) => body,
+                Err(_) => panic!("Could not compile!"),
               };
             compile_statement(&mut out, body, indent+1);
         },

@@ -1,5 +1,5 @@
-/// src/scanner.rs
-/// The scanner for the haumea language
+//! src/scanner.rs
+//! The scanner for the haumea language
 
 use std::str::Chars; // We need to bring the Chars struct into scope
 use std::iter::Peekable;
