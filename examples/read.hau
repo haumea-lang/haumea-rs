@@ -1,0 +1,3 @@
+to main do
+  display(read())
+end

@@ -77,9 +77,9 @@ impl<'a> Scanner<'a> {
         Scanner {
             source_str: source,
             source_chars: chars,
-            operator_chars: vec!['+', '=', '-', '*', '/', '<', '>', '~', '|', '&', '(', ')'],
+            operator_chars: vec!['+', '=', '-', '*', '/', '<', '>', '~', '|', '&', '(', ')', '!'],
             operators: vec!["+", "=", "-", "*", "/", "<", ">", ">=", "<=",
-                            "~", "|", "&", "and", "or", "not", "(", ")", "!="],
+                            "~", "|", "&", "and", "or", "not", "(", ")", "!=", "modulo"],
             ident_chars: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_".chars().collect::<Vec<_>>(),
             reserved_words: vec!["to", "with", "is", "return", "do", "end",
                                  "if", "then", "else", "let", "be", "forever",

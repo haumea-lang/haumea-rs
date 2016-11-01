@@ -113,6 +113,8 @@ pub enum Operator {
     Mul,
     /// Division (/)
     Div,
+    /// Modulo (modulo)
+    Modulo,
     /// Negation (-)
     Negate,
     /// Equals (=)
@@ -430,6 +432,8 @@ fn prec_0(mut token_stream: &mut Vec<Token>) -> Expression {
                             }
                             match_panic(&mut token_stream, Token::Comma);
                         }
+                    } else {
+                        token_stream.remove(0);
                     }
                     Expression::Call{
                         function: id,
@@ -439,7 +443,7 @@ fn prec_0(mut token_stream: &mut Vec<Token>) -> Expression {
                     Expression::Ident(id)
                 }
             },
-            t => panic!(format!("Expected an expression, not {:?}", t)),
+            t => panic!(format!("Expected an expression, not {:?}", t)),  
         }
     }
 }
@@ -453,6 +457,8 @@ fn prec_1(mut token_stream: &mut Vec<Token>) -> Expression {
                     Operator::Mul
                 } else if *name == "/" {
                     Operator::Div
+                } else if *name == "modulo" {
+                    Operator::Modulo
                 } else {
                     return lh
                 }

@@ -14,6 +14,13 @@ long display(long n) {
     return 0;
 }
 
+long read() {
+    printf(\"Enter an integer: \");
+    long n;
+    scanf(\"%ld\", &n);
+    return n;
+}
+
 /* End prolog */
 
 /* Start compiled program */
@@ -297,6 +304,7 @@ fn get_c_name(op: parser::Operator) -> &'static str {
         BinaryAnd => "&",
         BinaryOr => "|",
         BinaryNot => "~",
+        Modulo => "%",
     }
 }
 
