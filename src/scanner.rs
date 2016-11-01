@@ -83,7 +83,7 @@ impl<'a> Scanner<'a> {
             ident_chars: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_".chars().collect::<Vec<_>>(),
             reserved_words: vec!["to", "with", "is", "return", "do", "end",
                                  "if", "then", "else", "let", "be", "forever",
-								 "while", "for", "each", "in",
+                                 "while", "for", "each", "in",
                                  "set", "to", "through", "change", "by", "variable"],
             peek: peek,
         }
@@ -142,7 +142,7 @@ impl<'a> Scanner<'a> {
                 }
                 _ => break,
             }
-		}
+        }
         self.skip_comments();
         loop {
             match self.peek {
@@ -153,45 +153,45 @@ impl<'a> Scanner<'a> {
             }
         }
     }
-	
-	/// Skips over comments in self.source_chars
-	fn skip_comments(&mut self) {
-		let should_skip =  match self.peek {
-			Some(c) if c == '/' => {
-				if let Some(n) = self.source_chars.peek() {
-					n == &'*'
-				} else {
-					false
-				}
-			},
-			_ => false
-		};
-		if should_skip {
-			self.skip_until_comment_end()
-		}
-	}
-	
-	/// Skips until the end of a comment
-	fn skip_until_comment_end(&mut self) {
-		self.get_char(); // Skip the ? in the start of the comment
-		loop {
-		    self.get_char();
-			match self.peek {
-				Some(c) if c == '*' => {
-					if let Some(n) = self.source_chars.peek() {
-						if n == &'/' {
-							break;
-						}
-					}
-				},
-				Some(c) if c == '/' => self.skip_comments(),
-				_ => ()
-			}
-		}
-		self.get_char();
-		self.get_char();
-	}
-	
+    
+    /// Skips over comments in self.source_chars
+    fn skip_comments(&mut self) {
+        let should_skip =  match self.peek {
+            Some(c) if c == '/' => {
+                if let Some(n) = self.source_chars.peek() {
+                    n == &'*'
+                } else {
+                    false
+                }
+            },
+            _ => false
+        };
+        if should_skip {
+            self.skip_until_comment_end()
+        }
+    }
+    
+    /// Skips until the end of a comment
+    fn skip_until_comment_end(&mut self) {
+        self.get_char(); // Skip the ? in the start of the comment
+        loop {
+            self.get_char();
+            match self.peek {
+                Some(c) if c == '*' => {
+                    if let Some(n) = self.source_chars.peek() {
+                        if n == &'/' {
+                            break;
+                        }
+                    }
+                },
+                Some(c) if c == '/' => self.skip_comments(),
+                _ => ()
+            }
+        }
+        self.get_char();
+        self.get_char();
+    }
+    
     /// Returns the next number that can be found in self.source_chars
     fn get_num(&mut self) -> i32 {
         let mut s = String::new();

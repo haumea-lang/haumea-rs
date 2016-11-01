@@ -44,10 +44,10 @@ pub enum Statement {
     ///
     /// let x be an Integer
     Let(Ident, Type), */
-	/// A variable statement
-	///
-	/// variable x
-	Var(Ident),
+    /// A variable statement
+    ///
+    /// variable x
+    Var(Ident),
     /// An assignment statement
     ///
     /// set x to 5
@@ -80,26 +80,26 @@ pub enum Statement {
         function: Ident,
         arguments: Vec<Expression>,
     },
-	/// A forever loop
-	///
-	/// forever do ... end
-	Forever(Rc<Statement>),
-	/// A while loop
-	///
-	/// while x < 5 change x by 1
-	While {
+    /// A forever loop
+    ///
+    /// forever do ... end
+    Forever(Rc<Statement>),
+    /// A while loop
+    ///
+    /// while x < 5 change x by 1
+    While {
         cond: Expression,
         body: Rc<Statement>,
-	},
-	/// A for each loop
-	ForEach {
-		ident: Ident,
-		start: Expression,
-		end: Expression,
-		by: Expression,
+    },
+    /// A for each loop
+    ForEach {
+        ident: Ident,
+        start: Expression,
+        end: Expression,
+        by: Expression,
         range_type: String,
-		body: Rc<Statement>,
-	}
+        body: Rc<Statement>,
+    }
 }
 
 /// The operators in Haumea
@@ -241,15 +241,15 @@ fn parse_statement(mut token_stream: &mut Vec<Token>) -> Statement {
                 parse_set(&mut token_stream)
             } else if t == "change" {
                 parse_change(&mut token_stream)
-			} else if t == "variable" {
-				parse_declare(&mut token_stream)
-			} else if t == "forever" {
-				parse_forever(&mut token_stream)
-			} else if t == "while" {
-				parse_while(&mut token_stream)
-			} else if t == "for" {
-				parse_for_each(&mut token_stream)
-			} else {
+            } else if t == "variable" {
+                parse_declare(&mut token_stream)
+            } else if t == "forever" {
+                parse_forever(&mut token_stream)
+            } else if t == "while" {
+                parse_while(&mut token_stream)
+            } else if t == "for" {
+                parse_for_each(&mut token_stream)
+            } else {
                 panic!("Invalid statement!")
             }
         }
@@ -262,26 +262,26 @@ fn parse_statement(mut token_stream: &mut Vec<Token>) -> Statement {
 }
 
 fn parse_forever(mut token_stream: &mut Vec<Token>) -> Statement {
-	Statement::Forever(Rc::new(parse_statement(&mut token_stream)))
+    Statement::Forever(Rc::new(parse_statement(&mut token_stream)))
 }
 
 fn parse_while(mut token_stream: &mut Vec<Token>) -> Statement {
-	Statement::While{
-		cond: parse_expression(&mut token_stream),
-		body: Rc::new(parse_statement(&mut token_stream))
-	}
+    Statement::While{
+        cond: parse_expression(&mut token_stream),
+        body: Rc::new(parse_statement(&mut token_stream))
+    }
 }
 
 fn parse_for_each(mut token_stream: &mut Vec<Token>) -> Statement {
-	match_panic(&mut token_stream, Token::Keyword("each".to_string()));
-	let ident = match token_stream.remove(0) {
-		Token::Ident(name) => name,
-		t => panic!("Expected an identifier, not {:?}", t)
-	};
-	match_panic(&mut token_stream, Token::Keyword("in".to_string()));
-	let start = parse_expression(&mut token_stream);
+    match_panic(&mut token_stream, Token::Keyword("each".to_string()));
+    let ident = match token_stream.remove(0) {
+        Token::Ident(name) => name,
+        t => panic!("Expected an identifier, not {:?}", t)
+    };
+    match_panic(&mut token_stream, Token::Keyword("in".to_string()));
+    let start = parse_expression(&mut token_stream);
     
-	let range_token = token_stream.remove(0);
+    let range_token = token_stream.remove(0);
     let end = parse_expression(&mut token_stream);
     let range_type;
     
@@ -293,35 +293,35 @@ fn parse_for_each(mut token_stream: &mut Vec<Token>) -> Statement {
         panic!("Expected 'to' or 'through', not {:?}", range_token);
     }
     
-	let by = match token_stream[0] {
-		Token::Keyword(ref kw) => kw == &"by",
-		_ => false,
-	};
-	let by = if by {
-		token_stream.remove(0);
-		parse_expression(&mut token_stream)
-	} else {
-		Expression::Integer(1)
-	};
-	Statement::ForEach {
-		ident: ident,
-		start: start,
-		end: end,
-		by: by,
+    let by = match token_stream[0] {
+        Token::Keyword(ref kw) => kw == &"by",
+        _ => false,
+    };
+    let by = if by {
+        token_stream.remove(0);
+        parse_expression(&mut token_stream)
+    } else {
+        Expression::Integer(1)
+    };
+    Statement::ForEach {
+        ident: ident,
+        start: start,
+        end: end,
+        by: by,
         range_type: range_type.to_string(),
-		body: Rc::new(parse_statement(&mut token_stream))
-	}
+        body: Rc::new(parse_statement(&mut token_stream))
+    }
 }
 
 fn parse_return(mut token_stream: &mut Vec<Token>) -> Statement {
-	Statement::Return(parse_expression(&mut token_stream))
+    Statement::Return(parse_expression(&mut token_stream))
 }
 
 fn parse_declare(mut token_stream: &mut Vec<Token>) -> Statement {
-	let ident = match token_stream.remove(0) {
-		Token::Ident(ident) => ident,
-		t => panic!("Expected an identifier, not {:?}!", t),
-	};
+    let ident = match token_stream.remove(0) {
+        Token::Ident(ident) => ident,
+        t => panic!("Expected an identifier, not {:?}!", t),
+    };
     Statement::Var(ident)
 }
 fn parse_do(mut token_stream: &mut Vec<Token>) -> Statement {
@@ -407,16 +407,16 @@ fn prec_0(mut token_stream: &mut Vec<Token>) -> Expression {
     } else {
         match token_stream.remove(0) {
             Token::Number(n) => Expression::Integer(n),
-			Token::Operator(op) => {
-				if op == "-" {
-					Expression::UnaryOp {
-						operator: Operator::Sub,
-						expression: Rc::new(parse_expression(&mut token_stream))
-					}
-				} else {
-					panic!("Expected an expression, not {:?}", op)
-				}
-			}
+            Token::Operator(op) => {
+                if op == "-" {
+                    Expression::UnaryOp {
+                        operator: Operator::Sub,
+                        expression: Rc::new(parse_expression(&mut token_stream))
+                    }
+                } else {
+                    panic!("Expected an expression, not {:?}", op)
+                }
+            }
             Token::Ident(id) => {
                 if !token_stream.is_empty() && token_stream[0] == Token::Lp {
                     match_panic(&mut token_stream, Token::Lp);
