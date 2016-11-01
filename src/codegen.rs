@@ -156,10 +156,13 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
 			body,
 		} => {
             let comparitor;
+            let neg_comparitor;
             if range_type == "to" {
                 comparitor = "<";
+                neg_comparitor = ">";
             } else if range_type == "through" {
                 comparitor = "<=";
+                neg_comparitor = ">=";
             } else {
                 panic!("Could not compile!")
             }
@@ -182,8 +185,10 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
   								  by_name,
   							      compile_expression(by))
 							  );
-		    out.push_str(&format!("{:}for (long {:} = {:}; {:} {:} {:}; {:} += {:})", replicate(INDENT, indent),
-			                      ident, start_name, ident, comparitor, end_name, ident, by_name
+            let comp = format!("({:} < {:} ? {:} {:} {:} : {:} {:} {:})", 
+                               start_name, end_name, ident, comparitor, end_name, ident, neg_comparitor, end_name);
+		    out.push_str(&format!("{:}for (long {:} = {:}; {:}; {:} += {:})", replicate(INDENT, indent),
+			                      ident, start_name, comp, ident, by_name
 		                          ));
   			let body = match Rc::try_unwrap(body) {
   				Ok(body) => body,
