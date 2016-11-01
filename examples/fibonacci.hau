@@ -1,0 +1,11 @@
+to fib with (n) do
+  if n < 2 then return 1
+  else return fib(n-1) + fib(n-2)
+end
+
+to main do
+  forever do
+    display(fib(read()))
+  end
+end
+
