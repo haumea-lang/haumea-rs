@@ -8,8 +8,7 @@ to collatz with (n) do
     else
       set n to 3 * n + 1
   end
-  display(1)
-  return 0 
+  display(1) 
 end
 
 to main do
