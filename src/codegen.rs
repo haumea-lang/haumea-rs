@@ -119,13 +119,11 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
             if_clause,
             else_clause,
         } => {
-            out.push_str(&format!("{:}if ", replicate(INDENT, indent)));
-            out.push_str(&format!(" {:} ", compile_expression(cond)));
+            out.push_str(&format!("{:}if {:}\n", replicate(INDENT, indent), compile_expression(cond)));
             let if_clause = match Rc::try_unwrap(if_clause) {
                 Ok(if_clause) => if_clause,
                 Err(_) => panic!("Could not compile!"),
             };
-            out.push_str("\n");
             compile_statement(&mut out, if_clause, indent+1);
             let else_clause = match Rc::try_unwrap(else_clause) {
                 Ok(else_clause) => else_clause,
