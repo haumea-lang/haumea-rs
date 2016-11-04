@@ -57,7 +57,7 @@ fn compile_function(mut out: &mut String, func: parser::Function) {
     out.push_str(") ");
     out.push_str("{\n");
     compile_statement(&mut out, func.code, 1);
-    out.push_str("\n    return 0l;");
+    out.push_str(&format!("{:}return 0l;", INDENT));
     out.push_str("\n}\n");
 }
 
@@ -72,7 +72,7 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
                                   compile_expression(exp)));
         },
         Statement::Do(block) => {
-            out.push_str(&format!("\n{:}{{\n", replicate(INDENT, indent)));
+            out.push_str(&format!("{:}{{\n", replicate(INDENT, indent)));
             for sub_statement in block {
                 let sub = match Rc::try_unwrap(sub_statement) {
                     Ok(sub) => sub,
@@ -80,7 +80,7 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
                 };
                 compile_statement(&mut out, sub, indent+1);
             };
-            out.push_str(&format!("\n{:}}}\n", replicate(INDENT, indent)));
+            out.push_str(&format!("{:}}}\n", replicate(INDENT, indent)));
         },
         Statement::Call {
             function: func,
@@ -119,8 +119,7 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
             if_clause,
             else_clause,
         } => {
-            out.push_str(&format!("{:}if ", replicate(INDENT, indent)));
-            out.push_str(&format!(" {:} ", compile_expression(cond)));
+            out.push_str(&format!("{:}if {:}\n", replicate(INDENT, indent), compile_expression(cond)));
             let if_clause = match Rc::try_unwrap(if_clause) {
                 Ok(if_clause) => if_clause,
                 Err(_) => panic!("Could not compile!"),
@@ -131,12 +130,13 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
                 Err(_) => panic!("Could not compile!"),
             };
             if let Some(else_) = else_clause {
-                out.push_str(&format!("{:}else ", replicate(INDENT, indent)));
+                out.push_str(&format!("\n{:}else\n", replicate(INDENT, indent)));
                 compile_statement(&mut out, else_, indent+1);
+                out.push_str("\n");
             }
         },
         Statement::Forever(block) => {
-            out.push_str(&format!("{:}while (1) ", replicate(INDENT, indent)));
+            out.push_str(&format!("{:}while (1)\n", replicate(INDENT, indent)));
             let block = match Rc::try_unwrap(block) {
                 Ok(block) => block,
                 Err(_) => panic!("Could not compile!"),
@@ -147,7 +147,7 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
             cond,
             body,
         } => {
-            out.push_str(&format!("{:}while {:} ", replicate(INDENT, indent),
+            out.push_str(&format!("{:}while {:}\n", replicate(INDENT, indent),
                                                    compile_expression(cond)));
             let body = match Rc::try_unwrap(body) {
                 Ok(body) => body,
@@ -195,7 +195,7 @@ fn compile_statement(mut out: &mut String, statement: parser::Statement, indent:
                               );
             let comp = format!("({:} < {:} ? {:} {:} {:} : {:} {:} {:})", 
                                start_name, end_name, ident, comparitor, end_name, ident, neg_comparitor, end_name);
-            out.push_str(&format!("{:}for (long {:} = {:}; {:}; {:} += {:})", replicate(INDENT, indent),
+            out.push_str(&format!("{:}for (long {:} = {:}; {:}; {:} += {:})\n", replicate(INDENT, indent),
                                   ident, start_name, comp, ident, by_name
                                   ));
             let body = match Rc::try_unwrap(body) {
