@@ -1,0 +1,26 @@
+/* Displays the entire "99 bottles of beer" song */
+/* TODO we need strings to properly do this */
+
+to beer with (start) do
+  for each bottles in start through 3 by -1 do
+    /*
+    display(bottles ++ " bottles of beer on the wall, " ++ bottles ++ " bottles of beer.")
+    display("Take one down and pass it around, " ++ bottles - 1 ++ " bottles of beer on the wall")
+    */
+  end
+  
+  /*
+  display("2 bottles of beer on the wall, 2 bottles of beer.")
+  display("Take one down and pass it around, 1 bottle of beer on the wall")
+  
+  display("1 bottle of beer on the wall, 1 bottle of beer.")
+  display("Take one down and pass it around, no more bottles of beer on the wall")
+  
+  display("No more bottles of beer on the wall, no more bottles of beer.")
+  display("Go to the store and buy some more, " ++ start ++ " bottles of beer on the wall.")
+  */
+end
+
+to main do
+  beer(99)
+end
