@@ -1,11 +1,7 @@
 /* Returns the factorial of n */
 to factorial with (n) do
-    if n = 0 then do
-        return 1
-    end
-    else do
-        return n * factorial(n - 1)
-    end
+    if n = 0 then return 1
+    else return n * factorial(n - 1)
 end
 
 to main do

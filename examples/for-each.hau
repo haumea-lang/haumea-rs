@@ -1,6 +1,6 @@
 to main do
   for each i in 1 to 5 do
-    /* 1 2 3 4 5 */
+    /* 1 2 3 4 */
     display(i)
   end
   
