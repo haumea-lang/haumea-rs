@@ -1,7 +1,7 @@
 /// src/parser.rs
 /// The parser for the haumea language.
 use std::rc::Rc;
-use scanner::{Scanner, Token};
+use scanner::{Scanner, Token, ScanState};
 
 /// A Program is a Vec of Functions
 pub type Program = Vec<Function>;
@@ -145,7 +145,7 @@ pub enum Operator {
 
 #[derive(Debug)]
 pub enum Expression {
-    /// A binary operation (eg, "1 +2" or "True or False")
+    /// A binary operation (eg, "1 + 2" or "True or False")
     BinaryOp {
         operator: Operator,
         left: Rc<Expression>,
@@ -193,10 +193,14 @@ fn match_panic(mut token_stream: &mut Vec<Token>, expected: Token) {
 }
 
 fn parse_function(mut token_stream: &mut Vec<Token>) -> Function {
-    match_panic(&mut token_stream, Token::Keyword("to".to_string()));
+    match_panic(&mut token_stream, Token::Keyword("to".to_string(), ScanState::empty()));
     let name = match token_stream.remove(0) {
-        Token::Ident(s) => s,
-        t => panic!(format!("Expected an identifier, but found {:?}!", t)),
+        Token::Ident(s, _) => s,
+        t => {
+            let s = t.clone().state();
+            panic!("At line {:}:{:}, expected an identifier, but found {:?}!", 
+            s.line, s.column, t)
+        },
     };
     let signature = parse_signature(&mut token_stream);
     let code = parse_statement(&mut token_stream);
@@ -208,21 +212,25 @@ fn parse_function(mut token_stream: &mut Vec<Token>) -> Function {
 }
 
 fn parse_signature(mut token_stream: &mut Vec<Token>) -> Option<Signature> {
-    if token_stream[0] == Token::Keyword("with".to_string()) {
+    if token_stream[0] == Token::Keyword("with".to_string(), ScanState::empty()) {
         let mut args = vec![];
-        match_panic(&mut token_stream, Token::Keyword("with".to_string()));
-        match_panic(&mut token_stream, Token::Lp);
+        match_panic(&mut token_stream, Token::Keyword("with".to_string(), ScanState::empty()));
+        match_panic(&mut token_stream, Token::Lp(ScanState::empty()));
         loop {
             args.push(match token_stream.remove(0) {
-                Token::Ident(name) => name,
-                Token::Rp => break,
-                t => panic!(format!("Expected an identifier, but found {:?}!", t)),
+                Token::Ident(name, _) => name,
+                Token::Rp(_) => break,
+                t => {
+                    let s = t.clone().state();
+                    panic!("At line {:}:{:}, expected an identifier, but found {:?}!", 
+                    s.line, s.column, t)
+                },
             });
-            if token_stream[0] == Token::Rp {
+            if token_stream[0] == Token::Rp(ScanState::empty()) {
                 token_stream.remove(0);
                 break;
             }
-            match_panic(&mut token_stream, Token::Comma);
+            match_panic(&mut token_stream, Token::Comma(ScanState::empty()));
         }
         Some(args)
     } else {
@@ -232,7 +240,7 @@ fn parse_signature(mut token_stream: &mut Vec<Token>) -> Option<Signature> {
 
 fn parse_statement(mut token_stream: &mut Vec<Token>) -> Statement {
     match token_stream.remove(0) {
-        Token::Keyword(t) => {
+        Token::Keyword(t, _) => {
             if t == "return" {
                 parse_return(&mut token_stream)
             } else if t == "do" {
@@ -255,11 +263,15 @@ fn parse_statement(mut token_stream: &mut Vec<Token>) -> Statement {
                 panic!("Invalid statement!")
             }
         }
-        t @ Token::Ident(_) => {
+        t @ Token::Ident(..) => {
             token_stream.insert(0, t);
             parse_call(&mut token_stream)
         },
-        t => panic!("Syntax error! {:?}", t),
+        t => {
+            let s = t.clone().state();
+            panic!("Syntax error at line {:}:{:}, found {:?}", 
+            s.line, s.column, t)
+        },
     }
 }
 
@@ -275,28 +287,33 @@ fn parse_while(mut token_stream: &mut Vec<Token>) -> Statement {
 }
 
 fn parse_for_each(mut token_stream: &mut Vec<Token>) -> Statement {
-    match_panic(&mut token_stream, Token::Keyword("each".to_string()));
+    match_panic(&mut token_stream, Token::Keyword("each".to_string(), ScanState::empty()));
     let ident = match token_stream.remove(0) {
-        Token::Ident(name) => name,
-        t => panic!("Expected an identifier, not {:?}", t)
+        Token::Ident(name, _) => name,
+        t => {
+            let s = t.clone().state();
+            panic!("At line {:}:{:}, expected an identifier, but found {:?}!", 
+            s.line, s.column, t)
+        },
     };
-    match_panic(&mut token_stream, Token::Keyword("in".to_string()));
+    match_panic(&mut token_stream, Token::Keyword("in".to_string(), ScanState::empty()));
     let start = parse_expression(&mut token_stream);
     
     let range_token = token_stream.remove(0);
     let end = parse_expression(&mut token_stream);
     let range_type;
     
-    if range_token == Token::Keyword("to".to_string()) {
+    if range_token == Token::Keyword("to".to_string(), ScanState::empty()) {
         range_type = "to";
-    } else if range_token == Token::Keyword("through".to_string()) {
+    } else if range_token == Token::Keyword("through".to_string(), ScanState::empty()) {
         range_type = "through";
     } else {
-        panic!("Expected 'to' or 'through', not {:?}", range_token);
+        let s = range_token.clone().state();
+        panic!("At line {:}:{:}, expected 'to' or 'through', not {:?}", s.line, s.column, range_token);
     }
     
     let by = match token_stream[0] {
-        Token::Keyword(ref kw) => kw == &"by",
+        Token::Keyword(ref kw, _) => kw == &"by",
         _ => false,
     };
     let by = if by {
@@ -321,14 +338,18 @@ fn parse_return(mut token_stream: &mut Vec<Token>) -> Statement {
 
 fn parse_declare(mut token_stream: &mut Vec<Token>) -> Statement {
     let ident = match token_stream.remove(0) {
-        Token::Ident(ident) => ident,
-        t => panic!("Expected an identifier, not {:?}!", t),
+        Token::Ident(ident, _) => ident,
+        t => {
+            let s = t.clone().state();
+            panic!("At line {:}:{:}, expected an identifier, but found {:?}!", 
+            s.line, s.column, t)
+        },
     };
     Statement::Var(ident)
 }
 fn parse_do(mut token_stream: &mut Vec<Token>) -> Statement {
     let mut block = vec![];
-    while token_stream[0] != Token::Keyword("end".to_string()) {
+    while token_stream[0] != Token::Keyword("end".to_string(), ScanState::empty()) {
         block.push(Rc::new(parse_statement(&mut token_stream)));
     }
     token_stream.remove(0);
@@ -337,11 +358,11 @@ fn parse_do(mut token_stream: &mut Vec<Token>) -> Statement {
 
 fn parse_if(mut token_stream: &mut Vec<Token>) -> Statement {
     let cond = parse_expression(&mut token_stream);
-    match_panic(&mut token_stream, Token::Keyword("then".to_string()));
+    match_panic(&mut token_stream, Token::Keyword("then".to_string(), ScanState::empty()));
     let if_clause = Rc::new(parse_statement(&mut token_stream));
     let else_clause = Rc::new(if !token_stream.is_empty() &&
-                                 token_stream[0] == Token::Keyword("else".to_string()) {
-        match_panic(&mut token_stream, Token::Keyword("else".to_string()));
+                                 token_stream[0] == Token::Keyword("else".to_string(), ScanState::empty()) {
+        match_panic(&mut token_stream, Token::Keyword("else".to_string(), ScanState::empty()));
         Some(parse_statement(&mut token_stream))
     } else {
         None
@@ -355,39 +376,51 @@ fn parse_if(mut token_stream: &mut Vec<Token>) -> Statement {
 
 fn parse_set(mut token_stream: &mut Vec<Token>) -> Statement {
     let ident = match token_stream.remove(0) {
-        Token::Ident(ident) => ident,
-        t => panic!(format!("Expected an identifier, but found {:?}!", t)),
+        Token::Ident(ident, _) => ident,
+        t => {
+            let s = t.clone().state();
+            panic!("At line {:}:{:}, expected an identifier, but found {:?}!", 
+            s.line, s.column, t)
+        },
     };
-    match_panic(&mut token_stream, Token::Keyword("to".to_string()));
+    match_panic(&mut token_stream, Token::Keyword("to".to_string(), ScanState::empty()));
     let expr = parse_expression(&mut token_stream);
     Statement::Set(ident, expr)
 }
 
 fn parse_change(mut token_stream: &mut Vec<Token>) -> Statement {
     let ident = match token_stream.remove(0) {
-        Token::Ident(ident) => ident,
-        t => panic!(format!("Expected an identifier, but found {:?}!", t)),
+        Token::Ident(ident, _) => ident,
+        t => {
+            let s = t.clone().state();
+            panic!("At line {:}:{:}, expected an identifier, but found {:?}!", 
+            s.line, s.column, t)
+        },
     };
-    match_panic(&mut token_stream, Token::Keyword("by".to_string()));
+    match_panic(&mut token_stream, Token::Keyword("by".to_string(), ScanState::empty()));
     let expr = parse_expression(&mut token_stream);
     Statement::Change(ident, expr)
 }
 
 fn parse_call(mut token_stream: &mut Vec<Token>) -> Statement {
     let ident = match token_stream.remove(0) {
-        Token::Ident(ident) => ident,
-        t => panic!(format!("Expected an identifier, but found {:?}!", t)),
+        Token::Ident(ident, _) => ident,
+        t => {
+            let s = t.clone().state();
+            panic!("At line {:}:{:}, expected an identifier, but found {:?}!", 
+            s.line, s.column, t)
+        },
     };
-    match_panic(&mut token_stream, Token::Lp);
+    match_panic(&mut token_stream, Token::Lp(ScanState::empty()));
     let mut args = vec![];
-    if token_stream[0] != Token::Rp {
+    if token_stream[0] != Token::Rp(ScanState::empty()) {
         loop {
             args.push(parse_expression(&mut token_stream));
-            if token_stream[0] == Token::Rp {
+            if token_stream[0] == Token::Rp(ScanState::empty()) {
                 token_stream.remove(0);
                 break;
             }
-            match_panic(&mut token_stream, Token::Comma);
+            match_panic(&mut token_stream, Token::Comma(ScanState::empty()));
         }
     }
     Statement::Call{
@@ -401,36 +434,37 @@ fn parse_expression(mut token_stream: &mut Vec<Token>) -> Expression {
 }
 
 fn prec_0(mut token_stream: &mut Vec<Token>) -> Expression {
-    if token_stream[0] == Token::Lp {
+    if token_stream[0] == Token::Lp(ScanState::empty()) {
         token_stream.remove(0);
         let exp = parse_expression(&mut token_stream);
-        match_panic(&mut token_stream, Token::Rp);
+        match_panic(&mut token_stream, Token::Rp(ScanState::empty()));
         exp
     } else {
         match token_stream.remove(0) {
-            Token::Number(n) => Expression::Integer(n),
-            Token::Operator(op) => {
+            Token::Number(n, _) => Expression::Integer(n),
+            Token::Operator(op, s) => {
                 if op == "-" {
                     Expression::UnaryOp {
                         operator: Operator::Sub,
                         expression: Rc::new(parse_expression(&mut token_stream))
                     }
                 } else {
-                    panic!("Expected an expression, not {:?}", op)
+                    panic!("At line {:}:{:}, expected \"-\", but found {:?}!", 
+                           s.line, s.column, op)
                 }
             }
-            Token::Ident(id) => {
-                if !token_stream.is_empty() && token_stream[0] == Token::Lp {
-                    match_panic(&mut token_stream, Token::Lp);
+            Token::Ident(id, _) => {
+                if !token_stream.is_empty() && token_stream[0] == Token::Lp(ScanState::empty()) {
+                    match_panic(&mut token_stream, Token::Lp(ScanState::empty()));
                     let mut args = vec![];
-                    if token_stream[0] != Token::Rp {
+                    if token_stream[0] != Token::Rp(ScanState::empty()) {
                         loop {
                             args.push(Rc::new(parse_expression(&mut token_stream)));
-                            if token_stream[0] == Token::Rp {
+                            if token_stream[0] == Token::Rp(ScanState::empty()) {
                                 token_stream.remove(0);
                                 break;
                             }
-                            match_panic(&mut token_stream, Token::Comma);
+                            match_panic(&mut token_stream, Token::Comma(ScanState::empty()));
                         }
                     } else {
                         token_stream.remove(0);
@@ -443,7 +477,11 @@ fn prec_0(mut token_stream: &mut Vec<Token>) -> Expression {
                     Expression::Ident(id)
                 }
             },
-            t => panic!(format!("Expected an expression, not {:?}", t)),  
+            t => {
+                let s = t.clone().state();
+                panic!("At line {:}:{:}, expected an expression, but found {:?}!", 
+                s.line, s.column, t)
+            },
         }
     }
 }
@@ -452,7 +490,7 @@ fn prec_1(mut token_stream: &mut Vec<Token>) -> Expression {
     let lh = prec_0(&mut token_stream);
     if !token_stream.is_empty() {
         let op = match token_stream.get(0) {
-            Some(&Token::Operator(ref name)) => {
+            Some(&Token::Operator(ref name, _)) => {
                 if *name == "*" {
                     Operator::Mul
                 } else if *name == "/" {
@@ -481,7 +519,7 @@ fn prec_2(mut token_stream: &mut Vec<Token>) -> Expression {
     let lh = prec_1(&mut token_stream);
     if !token_stream.is_empty() {
         let op = match token_stream.get(0) {
-            Some(&Token::Operator(ref name)) => {
+            Some(&Token::Operator(ref name, _)) => {
                 if *name == "+" {
                     Operator::Add
                 } else if *name == "-" {
@@ -508,7 +546,7 @@ fn prec_3(mut token_stream: &mut Vec<Token>) -> Expression {
     let lh = prec_2(&mut token_stream);
     if !token_stream.is_empty() {
         let op = match token_stream.get(0) {
-            Some(&Token::Operator(ref name)) => {
+            Some(&Token::Operator(ref name, _)) => {
                 if *name == ">" {
                     Operator::Gt
                 } else if *name == ">=" {
@@ -543,7 +581,7 @@ fn prec_4(mut token_stream: &mut Vec<Token>) -> Expression {
     let lh = prec_3(&mut token_stream);
     if !token_stream.is_empty() {
         let op = match token_stream.get(0) {
-            Some(&Token::Operator(ref name)) => {
+            Some(&Token::Operator(ref name, _)) => {
                 if *name == "and" {
                     Operator::LogicalAnd
                 } else if *name == "or" {

@@ -24,40 +24,99 @@ pub struct Scanner<'a> {
     reserved_words: Vec<&'static str>,
     /// The look ahead char
     pub peek: Option<char>,
+    /// The column the scanner is on in the source
+    pub column: u32,
+    /// The line the scanner is on in the source
+    pub line: u32,
+}
+
+/// A structure containing the state of the scanner when it found a token
+#[derive(Debug)]
+#[derive(Copy, Clone)]
+pub struct ScanState {
+    /// The line the scanner was on
+    pub line: u32,
+    /// The column the scanner was on
+    pub column: u32,
+}
+
+impl ScanState {
+    /// Constructs a new ScanState
+    pub fn new(line: u32, column: u32) -> ScanState {
+        ScanState { line: line, column: column }
+    }
+    /// Constructs an empty ScanState
+    pub fn empty() -> ScanState {
+        ScanState::new(0, 0)
+    }
 }
 
 /// An enum representing the various tokens that can occur
 #[derive(Debug)]
-#[derive(PartialEq)]
+#[derive(Clone)]
 pub enum Token {
     /// An integer number
     ///
     /// The content is the number read as an i64
-    Number(i32),
+    Number(i32, ScanState),
     /// An identifier
     ///
     /// The content is the name of the identifier
-    Ident(String),
+    Ident(String, ScanState),
     /// A reserved word (or keyword)
     ///
     /// The content is the name of the keyword
-    Keyword(String),
+    Keyword(String, ScanState),
     /// An operator
     ///
     /// The content is the name of the operator
-    Operator(String),
+    Operator(String, ScanState),
     /// Left parens
-    Lp,
+    Lp(ScanState),
     /// Right parens
-    Rp,
+    Rp(ScanState),
     /// A comma
-    Comma,
+    Comma(ScanState),
     /// An unexpected char was read
     ///
     /// The content is the char read
-    Error(char),
+    Error(char, ScanState),
     /// End of input
-    EOF,
+    EOF(ScanState),
+}
+
+impl Token {
+    pub fn state(self) -> ScanState {
+        use self::Token::*;
+        match self {
+            Number(_, s) => s,
+            Ident(_, s) => s,
+            Keyword(_, s) => s,
+            Operator(_, s) => s,
+            Error(_, s) => s,
+            Lp(s) => s,
+            Rp(s) => s,
+            Comma(s) => s,
+            EOF(s) => s,
+        }
+    }
+}
+impl PartialEq for Token {
+    fn eq(&self, other: &Token) -> bool {
+        use self::Token::*;
+        match (self, other) {
+            (&Number(ref a, _), &Number(ref b, _)) => a == b,
+            (&Ident(ref a, _), &Ident(ref b, _)) => a == b,
+            (&Keyword(ref a, _), &Keyword(ref b, _)) => a == b,
+            (&Operator(ref a, _), &Operator(ref b, _)) => a == b,
+            (&Lp(_), &Lp(_)) => true,
+            (&Rp(_), &Rp(_)) => true,
+            (&Comma(_), &Comma(_)) => true,
+            (&Error(ref a, _), &Error(ref b, _)) => a == b,
+            (&EOF(_), &EOF(_)) => true,
+            _ => false,
+        }
+    }
 }
 
 impl<'a> Scanner<'a> {
@@ -86,6 +145,8 @@ impl<'a> Scanner<'a> {
                                  "while", "for", "each", "in",
                                  "set", "to", "through", "change", "by", "variable"],
             peek: peek,
+            column: 0,
+            line: 1,
         }
     }
 
@@ -102,35 +163,41 @@ impl<'a> Scanner<'a> {
     /// ```
     pub fn next_token(&mut self) -> Token {
         self.skip_white();
+        let state = ScanState::new(self.line, self.column);
         match self.peek {
             Some(c) => {
                 if self.ident_chars.contains(&c) {
-                    self.get_ident_token()
+                    self.get_ident_token(state)
                 } else if c.is_digit(10) {
-                    Token::Number(self.get_num())
+                    Token::Number(self.get_num(), state)
                 } else if c == '(' {
                     self.get_char();
-                    Token::Lp
+                    Token::Lp(state)
                 } else if c == ')' {
                     self.get_char();
-                    Token::Rp
+                    Token::Rp(state)
                 } else if c == ',' {
                     self.get_char();
-                    Token::Comma
+                    Token::Comma(state)
                 } else if self.operator_chars.contains(&c) {
-                    Token::Operator(self.get_op())
+                    Token::Operator(self.get_op(), state)
                 } else {
                     self.get_char();
-                    Token::Error(c)
+                    Token::Error(c, state)
                 }
             },
-            None => Token::EOF,
+            None => Token::EOF(state),
         }
     }
 
     /// Sets self.peek to be the next char in self.source_chars
     fn get_char(&mut self) {
         self.peek = self.source_chars.next();
+        self.column += 1;
+        if let Some('\n') = self.peek {
+            self.line += 1;
+            self.column = 1;
+        };
     }
 
     /// Skips over whitespace in self.source_chars
@@ -212,7 +279,7 @@ impl<'a> Scanner<'a> {
     /// 1. Token::Keyword (if the identifier is a reserved word)
     /// 2. Token::Operator (if the identifier is the name of an operator like `and` or `or`)
     /// 3. Token::Ident (otherwise)
-    fn get_ident_token(&mut self) -> Token {
+    fn get_ident_token(&mut self, state: ScanState) -> Token {
         let mut s = String::new();
         s.push(self.peek.unwrap());
         loop {
@@ -223,11 +290,11 @@ impl<'a> Scanner<'a> {
             }
         };
         if self.reserved_words.contains(&&s[..]) {
-            Token::Keyword(s)
+            Token::Keyword(s, state)
         } else if self.operators.contains(&&s[..]) {
-            Token::Operator(s)
+            Token::Operator(s, state)
         } else {
-            Token::Ident(s)
+            Token::Ident(s, state)
         }
     }
 
@@ -266,7 +333,7 @@ impl<'a> Iterator for Scanner<'a> {
     fn next(&mut self) -> Option<Token> {
         let tok = self.next_token();
         match tok {
-            Token::EOF => None,
+            Token::EOF(_) => None,
             _ => Some(tok),
         }
     }
