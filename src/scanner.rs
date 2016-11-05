@@ -154,12 +154,12 @@ impl<'a> Scanner<'a> {
     ///
     /// # Examples
     /// ```
-    /// # use haumea::scanner::{Scanner, Token};
+    /// # use haumea::scanner::{Scanner, Token, ScanState};
     /// let mut s = Scanner::new("1 + 1");
-    /// assert_eq!(s.next_token(), Token::Number(1));
-    /// assert_eq!(s.next_token(), Token::Operator("+".to_string()));
-    /// assert_eq!(s.next_token(), Token::Number(1));
-    /// assert_eq!(s.next_token(), Token::EOF);
+    /// assert_eq!(s.next_token(), Token::Number(1, ScanState::empty()));
+    /// assert_eq!(s.next_token(), Token::Operator("+".to_string(), ScanState::empty()));
+    /// assert_eq!(s.next_token(), Token::Number(1, ScanState::empty()));
+    /// assert_eq!(s.next_token(), Token::EOF(ScanState::empty()));
     /// ```
     pub fn next_token(&mut self) -> Token {
         self.skip_white();
@@ -323,11 +323,11 @@ impl<'a> Iterator for Scanner<'a> {
     ///
     /// # Examples
     ///```
-    /// # use haumea::scanner::{Scanner, Token};
+    /// # use haumea::scanner::{Scanner, Token, ScanState};
     /// let s = Scanner::new("1 + 1");
-    /// assert_eq!(s.next(), Some(Token::Number(1)));
-    /// assert_eq!(s.next(), Some(Token::Operator("+".to_string())));
-    /// assert_eq!(s.next(), Some(Token::Number(1)));
+    /// assert_eq!(s.next(), Some(Token::Number(1, ScanState::empty())));
+    /// assert_eq!(s.next(), Some(Token::Operator("+".to_string(), ScanState::empty())));
+    /// assert_eq!(s.next(), Some(Token::Number(1, ScanState::empty())));
     /// assert_eq!(s.next(), None);
     ///```
     fn next(&mut self) -> Option<Token> {
