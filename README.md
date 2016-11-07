@@ -7,20 +7,23 @@
 Haumea is an experimental language designed to be easy to learn and use.
 # Using
 
-First, make sure that you have Rust and Cargo installed. Then run the following commands:
+First, make sure that you have Rust and Cargo installed. Then, simply clone this repo-
 
-```
+```sh
 $ git clone https://github.com/BookOwl/haumea.git
+```
+
+-and just use the following to run the Haumea compiler, where `hello.hau` is your Haumea program. (This will compile the Haumea source, if required, compile `hello.hau`, use `cc` to compile the result, and finally run the binary.)
+
+```sh
+$ make do file=hello.hau
+
+# or if that doesn't work:
+
 $ cargo build
-```
-
-To run the compiler, use the following commands:
-
-```
-# Compile the .hau file to a .c
-$ ./target/debug/haumea < in.hau > out.c
-# Compile the .c
-$ gcc out.c -o out
+$ ./target/debug/haumea < hello.hau > out.c
+$ cc out.c -o out
+$ ./out
 ```
 
 # Example programs
@@ -57,4 +60,3 @@ Haumea is released under the MIT license. Please see LICENSE.txt for details.
 @nanalan - Made an amazing logo
 
 Many other people who have helped with design decisions
-
