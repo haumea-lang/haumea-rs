@@ -284,9 +284,8 @@ long read() {
         format!("__HAUMEA_TEMP_{:}", self._name_number)
     }
 }
-// Utility functions
 
-/// Writes a newline to out
+// Utility functions
 
 /// Replicates a &str t times
 fn replicate(s: &str, t: i32) -> String {
