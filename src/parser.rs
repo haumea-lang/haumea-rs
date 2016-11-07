@@ -19,7 +19,7 @@ pub type Ident = String;
 pub type Signature = Vec<String>;
 
 /// A function is a callable unit of code that returns a value
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Function {
     /// The name of the function
     pub name: String,
@@ -34,7 +34,7 @@ pub struct Function {
 }
 
 /// A Haumea statement
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Statement {
     /// A return statement
     ///
@@ -103,7 +103,7 @@ pub enum Statement {
 }
 
 /// The operators in Haumea
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Operator {
     /// Addition (+)
     Add,
@@ -143,7 +143,7 @@ pub enum Operator {
     BinaryNot,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Expression {
     /// A binary operation (eg, "1 + 2" or "True or False")
     BinaryOp {
